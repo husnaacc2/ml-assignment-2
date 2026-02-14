@@ -101,3 +101,6 @@ for name, model in models.items():
 results_df = pd.DataFrame(results).T
 print("\nFinal Evaluation Metrics:")
 print(results_df.round(4))
+# Save comparison results dynamically
+results_df.to_csv("model/comparison_results.csv")
+

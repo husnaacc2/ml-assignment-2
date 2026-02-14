@@ -9,19 +9,22 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
-    confusion_matrix
+    confusion_matrix,
+    roc_auc_score,
+    matthews_corrcoef
 )
 
 # -------------------------------------------------
-# Page configuration
+# Page Setup
 # -------------------------------------------------
-st.set_page_config(page_title="ML Classification App", layout="centered")
+st.set_page_config(page_title="2025AB05042_ML Classification App", layout="centered")
 
-st.title("Machine Learning Classification Models")
-st.write("Upload test data, select a model, and view evaluation results.")
+st.title("Machine Learning Model Evaluation Dashboard")
+st.write("This application allows evaluation of trained classification models using either the built-in dataset or a user-provided dataset.")
+st.write("You can choose to download the sample test dataset or upload your own CSV file (make sure it contains a 'target' column). You can also click the 'Load Default Test Data' button to load the default test dataset.")
 
 # -------------------------------------------------
-# Load scaler and models
+# Load Models and Scaler
 # -------------------------------------------------
 scaler = joblib.load("model/scaler.pkl")
 
@@ -35,49 +38,95 @@ models = {
 }
 
 # -------------------------------------------------
-# Model selection
+# Dataset Section
 # -------------------------------------------------
-selected_model_name = st.selectbox(
-    "Select a classification model",
-    list(models.keys())
-)
+st.subheader("Test Dataset Selection")
 
-# -------------------------------------------------
-# File upload
-# -------------------------------------------------
-uploaded_file = st.file_uploader(
-    "Upload test dataset (CSV file with target column)",
-    type=["csv"]
-)
+if "data" not in st.session_state:
+    st.session_state.data = None
 
-# -------------------------------------------------
-# Prediction and evaluation
-# -------------------------------------------------
+col1, col2 = st.columns(2)
+
+with col1:
+    st.download_button(
+        label="Download Sample Test Data",
+        data=open("data/breast_cancer.csv", "rb"),
+        file_name="breast_cancer_sample.csv",
+        mime="text/csv"
+    )
+
+uploaded_file = st.file_uploader("Or upload your own dataset (CSV with target column)", type=["csv"])
+
 if uploaded_file is not None:
-    data = pd.read_csv(uploaded_file)
+    st.session_state.data = pd.read_csv(uploaded_file)
+    st.success("Uploaded dataset loaded successfully.")
+
+with col2:
+    if st.button("Load Default Test Data"):
+        st.session_state.data = pd.read_csv("data/breast_cancer.csv")
+        st.success("Default test dataset loaded successfully.")
+
+data = st.session_state.data
+# -------------------------------------------------
+# Model Selection
+# -------------------------------------------------
+selected_model = st.selectbox(
+    "Select a Trained Classification Model for Evaluation", list(models.keys())
+)
+# -------------------------------------------------
+# Evaluation
+# -------------------------------------------------
+# -------------------------------------------------
+# Evaluation Section
+# -------------------------------------------------
+if data is not None:
 
     if "target" not in data.columns:
-        st.error("Uploaded CSV must contain a 'target' column.")
+        st.error("Dataset must contain a 'target' column.")
     else:
         X_test = data.drop("target", axis=1)
         y_test = data["target"]
 
-        X_test_scaled = scaler.transform(X_test)
+        X_scaled = scaler.transform(X_test)
 
-        model = joblib.load(models[selected_model_name])
-        y_pred = model.predict(X_test_scaled)
+
+        model = joblib.load(models[selected_model])
+        y_pred = model.predict(X_scaled)
 
         # -----------------------------
-        # Display metrics
+        # Metric Calculations
         # -----------------------------
-        st.subheader("Evaluation Metrics")
+        acc = accuracy_score(y_test, y_pred)
+        prec = precision_score(y_test, y_pred)
+        rec = recall_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred)
+        mcc = matthews_corrcoef(y_test, y_pred)
 
+        # AUC calculation (probability-based)
+        if hasattr(model, "predict_proba"):
+            y_proba = model.predict_proba(X_scaled)[:, 1]
+            auc = roc_auc_score(y_test, y_proba)
+        else:
+            auc = 0.0
+
+        # -----------------------------
+        # Display Metrics (2 rows × 3 columns)
+        # -----------------------------
+        st.subheader("Model Evaluation Metrics")
+
+        # Row 1
         col1, col2, col3 = st.columns(3)
-        col1.metric("Accuracy", round(accuracy_score(y_test, y_pred), 4))
-        col2.metric("Precision", round(precision_score(y_test, y_pred), 4))
-        col3.metric("Recall", round(recall_score(y_test, y_pred), 4))
+        col1.metric("Accuracy", round(acc, 4))
+        col2.metric("AUC", round(auc, 4))
+        col3.metric("Precision", round(prec, 4))
+        
 
-        st.metric("F1 Score", round(f1_score(y_test, y_pred), 4))
+        # Row 2
+        col4, col5, col6 = st.columns(3)
+        col4.metric("Recall", round(rec, 4))
+        col5.metric("F1 Score", round(f1, 4))
+        col6.metric("MCC", round(mcc, 4))
+        
 
         # -----------------------------
         # Confusion Matrix
@@ -87,14 +136,25 @@ if uploaded_file is not None:
         cm = confusion_matrix(y_test, y_pred)
 
         fig, ax = plt.subplots()
-        sns.heatmap(
-            cm,
-            annot=True,
-            fmt="d",
-            cmap="Blues",
-            ax=ax
-        )
-        ax.set_xlabel("Predicted")
-        ax.set_ylabel("Actual")
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+        ax.set_xlabel("Predicted Label")
+        ax.set_ylabel("True Label")
 
         st.pyplot(fig)
+
+        # -----------------------------
+        # Overall Comparison Table
+        # -----------------------------
+        st.subheader("Comparative Performance of All Trained Models")
+
+        comparison_df = pd.read_csv("model/comparison_results.csv")
+        comparison_df.rename(columns={"Unnamed: 0": "Model"}, inplace=True)
+
+        # Highlight selected model
+        def highlight_row(row):
+            if row["Model"] == selected_model:
+                return ["background-color: #2E8B57"] * len(row)
+            else:
+                return [""] * len(row)
+
+        st.dataframe(comparison_df.style.apply(highlight_row, axis=1))
