@@ -58,14 +58,28 @@ Random Forest          0.9737  0.9929     1.0000  0.9286  0.9630  0.9442
 XGBoost                0.9737  0.9940     1.0000  0.9286  0.9630  0.9442
 
 4. Observations on Model Performance
-Logistic Regression	Logistic Regression achieved strong overall performance with an accuracy of 96.49% and a very high AUC of 0.996, indicating excellent class separability. The balanced precision (0.975) and recall (0.9286) resulted in a high F1 score and MCC, suggesting stable generalization and reliable predictions on unseen data.
+Random Forest and XGBoost achieved the best overall performance, both recording
+the highest accuracy (97.37%) and MCC (0.9442). Their perfect precision (1.000) indicates
+zero false positives on the test set, demonstrating strong robustness and reliability. XGBoost
+slightly outperformed Random Forest in AUC (0.9940 vs. 0.9929).
 
-Decision Tree	The Decision Tree model showed comparatively lower performance, with reduced accuracy (92.98%) and MCC (0.8492). While precision and recall were balanced, the drop in AUC indicates limited generalization, likely due to overfitting caused by its sensitivity to training data.
+Logistic Regression also performed exceptionally well, achieving high accuracy
+(96.49%) and the highest AUC (0.9960), indicating excellent class separability. Its balanced
+precision (0.975) and recall (0.9286) resulted in strong F1 and MCC values, showing stable
+generalization despite being a linear model.
 
-KNN	KNN achieved good accuracy (95.61%) and precision (0.9744), but slightly lower recall (0.9048) compared to ensemble models. This suggests that while KNN makes confident predictions, it may miss some positive cases, especially near class boundaries.
+KNN demonstrated competitive performance with accuracy of 95.61% and high precision
+(0.9744). However, its slightly lower recall (0.9048) compared to ensemble models suggests
+it may miss some positive instances near decision boundaries.
 
-Naive Bayes	Naive Bayes demonstrated fast and efficient learning with a high AUC of 0.9891, but lower recall (0.8571) and MCC (0.8292). This performance reflects the impact of the strong feature independence assumption, which limits its effectiveness on correlated features.
+Decision Tree showed moderate performance, with accuracy of 92.98% and MCC of
+0.8492. While precision and recall were balanced, the comparatively lower AUC (0.9246)
+indicates reduced generalization capability, likely due to sensitivity to training data variations.
 
-Random Forest (Ensemble)	Random Forest achieved the highest overall performance, with accuracy of 97.37%, perfect precision (1.0), and strong MCC (0.9442). The ensemble approach effectively reduced variance and improved robustness, leading to consistent and reliable predictions.
+Naive Bayes achieved a strong AUC (0.9891) but recorded the lowest recall (0.8571) and
+MCC (0.8292) among all models. This reflects the impact of its feature independence
+assumption, which may not fully capture relationships between correlated features.
 
-XGBoost (Ensemble)	XGBoost matched Random Forest in accuracy (97.37%) and F1 score (0.9630), while maintaining a very high AUC of 0.994. Its gradient boosting framework allowed it to capture complex feature interactions efficiently, resulting in strong predictive performance across all metrics.
+Overall, ensemble-based methods (Random Forest and XGBoost) provided the most
+consistent and robust performance across all evaluation metrics, making them the
+most suitable models for this classification task.
