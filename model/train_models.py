@@ -104,3 +104,9 @@ print(results_df.round(4))
 # Save comparison results dynamically
 results_df.to_csv("model/comparison_results.csv")
 
+# -------------------------------------------------
+# Save the exact test dataset used during training
+# -------------------------------------------------
+test_data = X_test.copy()
+test_data["target"] = y_test
+test_data.to_csv("model/fixed_test_data.csv", index=False)

@@ -48,12 +48,13 @@ if "data" not in st.session_state:
 col1, col2 = st.columns(2)
 
 with col1:
-    st.download_button(
-        label="Download Sample Test Data",
-        data=open("data/breast_cancer.csv", "rb"),
-        file_name="breast_cancer_sample.csv",
-        mime="text/csv"
-    )
+    with open("model/fixed_test_data.csv", "rb") as f:
+        st.download_button(
+            label="Download Sample Test Data",
+            data=f,
+            file_name="test_dataset.csv",
+            mime="text/csv"
+        )
 
 uploaded_file = st.file_uploader("Or upload your own dataset (CSV with target column)", type=["csv"])
 
@@ -63,7 +64,7 @@ if uploaded_file is not None:
 
 with col2:
     if st.button("Load Default Test Data"):
-        st.session_state.data = pd.read_csv("data/breast_cancer.csv")
+        st.session_state.data = pd.read_csv("model/fixed_test_data.csv")
         st.success("Default test dataset loaded successfully.")
 
 data = st.session_state.data
