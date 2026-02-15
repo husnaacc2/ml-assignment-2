@@ -48,7 +48,7 @@ F1 Score
 
 Matthews Correlation Coefficient (MCC)
 
-Model Comparison Table
+Model Comparison Table:
                      Accuracy     AUC  Precision  Recall      F1     MCC
 Logistic Regression    0.9649  0.9960     0.9750  0.9286  0.9512  0.9245
 Decision Tree          0.9298  0.9246     0.9048  0.9048  0.9048  0.8492
@@ -57,7 +57,7 @@ Naive Bayes            0.9211  0.9891     0.9231  0.8571  0.8889  0.8292
 Random Forest          0.9737  0.9929     1.0000  0.9286  0.9630  0.9442
 XGBoost                0.9737  0.9940     1.0000  0.9286  0.9630  0.9442
 
-4. Observations on Model Performance
+4. Observations on Model Performance:
 Random Forest and XGBoost achieved the best overall performance, both recording
 the highest accuracy (97.37%) and MCC (0.9442). Their perfect precision (1.000) indicates
 zero false positives on the test set, demonstrating strong robustness and reliability. XGBoost
